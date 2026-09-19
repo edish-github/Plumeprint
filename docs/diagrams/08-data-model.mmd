@@ -1,0 +1,141 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}}}%%
+erDiagram
+  SITE ||--o{ MONITOR : has
+  SITE ||--o{ FACILITY : includes
+  MONITOR ||--o{ HOURLY_OBS : records
+  MONITOR ||--o{ EPISODE : yields
+  MONITOR ||--o{ FINGERPRINT_BIN : "summarised by"
+  FACILITY ||--o{ EVENT_REPORT : files
+  EVENT_REPORT ||--o{ EMISSION_POINT : lists
+  EMISSION_POINT ||--o{ CONTAMINANT : releases
+  EVENT_REPORT ||--o| NARRATIVE : "parsed into"
+  EPISODE ||--o{ MATCH : "candidate for"
+  EVENT_REPORT ||--o{ MATCH : "candidate for"
+  EVENT_REPORT ||--o{ REPORT_VISIBILITY : "assessed at"
+  MONITOR ||--o{ REPORT_VISIBILITY : assesses
+  FACILITY ||--o{ COVERAGE : "upwind share"
+  MONITOR ||--o{ COVERAGE : sees
+  EPISODE ||--o| CASE_FILE : "investigated in"
+  CASE_FILE ||--o{ AGENT_STEP : traces
+
+  SITE {
+    string site_id PK "texas-city"
+    string name
+    string county "AEER county filter"
+    string tz "America/Chicago"
+  }
+  MONITOR {
+    string monitor_id PK "48-167-0005"
+    string site_id FK
+    float lat
+    float lon
+    float threshold_ppb "max(5, p99)"
+    float baseline_ppb
+    string wind_source "aqs or openmeteo"
+  }
+  HOURLY_OBS {
+    string monitor_id FK
+    datetime t_utc PK "hour beginning"
+    float so2_ppb
+    float wd_deg "direction wind comes FROM"
+    float ws_ms
+    string wind_source
+  }
+  FACILITY {
+    string rn PK "TCEQ RN number"
+    string name
+    float lat
+    float lon
+    float radius_m "plant footprint"
+    string coord_quality "manual, geocoded"
+  }
+  EVENT_REPORT {
+    int incident_id PK
+    string rn FK
+    string event_type
+    datetime start_utc
+    datetime end_utc
+    datetime notified_utc
+    float so2_lb "sum over emission points"
+    string cause_text
+    string source_url
+  }
+  EMISSION_POINT {
+    int incident_id FK
+    string epn
+    string common_name
+  }
+  CONTAMINANT {
+    int incident_id FK
+    string epn FK
+    string name
+    float quantity
+    string units
+    float limit
+    string authorization
+  }
+  NARRATIVE {
+    int incident_id FK
+    string cause_category
+    string release_pathway
+    bool elevated_release
+    bool intermittent
+    string summary
+  }
+  EPISODE {
+    string episode_id PK "monitor + start hour"
+    string monitor_id FK
+    datetime start_utc
+    datetime end_utc
+    float peak_ppb
+    float wd_mean_deg "ppb-weighted circular mean"
+    string verdict
+  }
+  MATCH {
+    string episode_id FK
+    int incident_id FK
+    float s_time
+    float s_spec
+    float s_bearing
+    float confidence
+    bool is_best
+  }
+  REPORT_VISIBILITY {
+    int incident_id FK
+    string monitor_id FK
+    string status "SEEN, FAINT, UNSEEN..."
+    float peak_ppb_during
+    float upwind_share
+  }
+  FINGERPRINT_BIN {
+    string monitor_id FK
+    int bin_deg PK "0 to 350 step 10"
+    int year "0 = all years"
+    float cpf
+    float ci_low
+    float ci_high
+    int n_hours
+  }
+  COVERAGE {
+    string monitor_id FK
+    string rn FK
+    float upwind_share_hours
+    float so2_lb_while_upwind
+    float so2_lb_total
+  }
+  CASE_FILE {
+    string episode_id FK
+    string verdict
+    string confidence
+    string headline
+    string request_draft
+    bool verified
+    string model
+  }
+  AGENT_STEP {
+    string episode_id FK
+    int seq
+    string tool
+    string args_json
+    string summary
+  }
