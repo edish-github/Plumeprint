@@ -1,0 +1,51 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}, "flowchart": {"curve": "basis", "htmlLabels": true, "nodeSpacing": 38, "rankSpacing": 52, "padding": 10, "wrappingWidth": 340}}}%%
+flowchart TD
+  CFG["S0 · config/sites.yaml<br/>monitors, counties, years, thresholds"]:::store
+  S1["S1 · ingest_aqs_so2<br/>stream the zip, keep state 48"]:::det
+  S2["S2 · ingest_aqs_wind<br/>params 61103 + 61104"]:::det
+  S3["S3 · ingest_openmeteo<br/>GMT, m/s, retry with backoff"]:::det
+  S4["S4 · scrape_aeer<br/>search, paginate, fetch details"]:::det
+  S5["S5 · facilities<br/>geocode + manual overrides"]:::det
+  S6["S6 · normalize<br/>everything onto UTC hours"]:::det
+  S7["S7 · episodes<br/>top 1% and at least 5 ppb<br/>merge gaps up to 3 h"]:::det
+  S8["S8 · fingerprint<br/>CPF per 10° bin<br/>day-block bootstrap"]:::stat
+  S9["S9 · reconcile<br/>episodes to reports and back<br/>confidence score"]:::stat
+  S10["S10 · coverage<br/>when was each facility upwind?"]:::stat
+  S11["S11 · export JSON<br/>web/public/data"]:::det
+  S12["S12 · validate<br/>golden numbers from<br/>the feasibility run"]:::good
+  T1["T1 · extract-narratives<br/>cause taxonomy per report"]:::llm
+  T2["T2 · run-agent<br/>investigate flagged episodes"]:::llm
+  T3["T3 · verify<br/>reject unsupported numbers"]:::det
+  CASES["web/public/data/cases"]:::store
+  CFG --> S1 & S2 & S3 & S4
+  S1 & S2 & S3 & S4 --> S6
+  S4 --> S5
+  S6 --> S8
+  S6 --> S7 --> S9
+  S6 --> S10
+  S5 --> S9
+  S5 --> S10
+  S8 & S9 & S10 --> S11
+  S11 --> S12
+  S11 --> T1 --> T2 --> T3 --> CASES
+  subgraph LEGEND["Legend"]
+    direction LR
+    LG1["deterministic code"]:::det
+    LG2["statistics"]:::stat
+    LG3["Claude"]:::llm
+    LG4["files"]:::store
+    LG1 ~~~ LG2 ~~~ LG3 ~~~ LG4
+  end
+
+  classDef src fill:#EFE7D3,stroke:#8A7A4F,color:#1B1B1F;
+  classDef det fill:#DCE6F2,stroke:#33558B,color:#10233F;
+  classDef stat fill:#E7E0F5,stroke:#5B3FA0,color:#24124D;
+  classDef llm fill:#FCE8D5,stroke:#C2571A,color:#4A1F05;
+  classDef ui fill:#DDF0E8,stroke:#1B7F6B,color:#0B3A30;
+  classDef store fill:#F1F1F1,stroke:#555555,color:#1B1B1F;
+  classDef user fill:#2D3142,stroke:#2D3142,color:#FFFFFF;
+  classDef core fill:#FFF7E8,stroke:#D9381E,stroke-width:2px,color:#1B1B1F;
+  classDef bad fill:#FBE3DE,stroke:#D9381E,color:#5A1207;
+  classDef good fill:#D8EFE9,stroke:#1B7F6B,color:#0B3A30;
+  classDef warn fill:#FFF1CC,stroke:#B7791F,color:#4A3000;
+  classDef mute fill:#E6EAF0,stroke:#64748B,color:#1F2937;
