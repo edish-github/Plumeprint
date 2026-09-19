@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.venv/
+.env
+.env.local
+.DS_Store
+data/raw/
+data/interim/
+!data/golden/
+web/node_modules/
+web/.next/
+web/out/
+*.tsbuildinfo
+
+# Reference & personal docs
+research/
+plumeprint-site/
+/plumeprint-ui-*.png
