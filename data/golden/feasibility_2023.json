@@ -1,0 +1,32 @@
+{
+  "measured_on": "2026-09-17",
+  "method": "Hand analysis: EPA AQS 2023 hourly SO2, Open-Meteo modelled wind, TCEQ Galveston County reports. Episodes at a fixed 5 ppb floor, split on gaps over 4 h. Matching on time overlap (2 h either side) plus SO2 listed.",
+  "monitor": "48-167-0005",
+  "so2_hours_2023": 7998,
+  "so2_hours_2023_basis": "local standard time, matching how the AQS yearly file is filtered; counting on UTC years gives 8003, because the 2022 file's last local hours fall into 2023 UTC",
+  "p95_ppb": 1.2,
+  "p99_ppb": 2.4,
+  "max_ppb": 43.7,
+  "max_at_utc": "2023-04-20T13:00:00Z",
+  "hours_above_1_5_ppb": 228,
+  "hours_at_or_above_5_ppb": 28,
+  "cpf_se_sector": 0.234,
+  "fingerprint_peak_bin_deg": 130,
+  "fingerprint_peak_cpf": 0.27,
+  "top25_wind_range_deg": [
+    118,
+    163
+  ],
+  "episodes": 10,
+  "episodes_without_report": 6,
+  "galveston_reports_2023": 48,
+  "galveston_reports_with_so2": 37,
+  "galveston_so2_lb_total": 159019,
+  "reports_at_or_above_1000lb": 28,
+  "reports_1000lb_peak_under_2ppb": 21,
+  "incident_399287_so2_lb": 1675.85,
+  "incident_398929_so2_lb": 3716.55,
+  "incident_403267_so2_lb": 8830.73,
+  "incident_403267_monitor_peak_ppb": 1.5,
+  "incident_410224_so2_lb": 40994
+}
