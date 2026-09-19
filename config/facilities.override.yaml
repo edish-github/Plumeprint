@@ -1,0 +1,13 @@
+# Hand-placed facility coordinates. This file takes priority over EPA FRS/ECHO.
+#
+# Add an entry only after checking the location yourself on satellite imagery. Leave lat
+# and lon blank to fall back to FRS, which is what every facility currently uses.
+#
+# radius_m is half the plant's longest dimension. It widens the angular span the bearing
+# test allows, so a two-kilometre refinery is not judged like a compressor station.
+
+# - rn: RN102535077
+#   name: Blanchard Refining Galveston Bay Refinery
+#   lat:        # FRS gives 29.374444 (ECHO accuracy: 200 m)
+#   lon:        # FRS gives -94.925
+#   radius_m:   # class default currently 1500

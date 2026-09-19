@@ -1,0 +1,113 @@
+# PlumePrint site configuration.
+# Every tunable number in the pipeline lives here. Nothing downstream hardcodes a threshold.
+# See implementation spec section 4.
+
+defaults:
+  # 2023 is the reference year every golden number was measured on; the others give the
+  # fingerprint its stability check. Widen once the pipeline is green.
+  years: [2021, 2022, 2023, 2024, 2025]
+  pollutant:
+    name: SO2
+    aqs_param: "42401"
+    report_label: "sulfur dioxide"   # matched case-insensitively against TCEQ contaminant names
+    units: ppb
+
+  episode:
+    abs_min_ppb: 5.0        # an episode hour must clear this AND the percentile below
+    pct: 0.99               # per-monitor percentile over the full record
+    merge_gap_h: 3          # gaps up to this many hours stay inside one episode
+    severe_ppb: 75.0        # severity flag only; no rule depends on it
+
+  fingerprint:
+    bin_deg: 10
+    top_pct: 0.95           # "top 5% hours" definition
+    min_ws_ms: 1.0          # calm hours have meaningless direction
+    min_hours_per_bin: 30
+    bootstrap_n: 500        # day-block resampling
+    ci: [0.05, 0.95]
+    lobe_frac: 0.5          # lobe extends while cpf >= lobe_frac * peak
+
+  match:
+    lead_h: 2               # report window is widened this many hours each side
+    lag_h: 2
+    min_time_share: 0.5     # share of episode hours inside the widened window
+    min_bearing: 0.5        # S_bearing floor for MATCHED
+    long_report_days: 7     # longer windows can only reach WEAK_MATCH
+    spec_hours: 72.0        # S_spec = clip(spec_hours / duration, ...)
+    spec_floor: 0.15
+
+  visibility:
+    min_lb: 1000.0          # reports at or above this are assessed
+    faint_delta_ppb: 1.0    # peak - baseline at or above this is FAINT
+    min_data_share: 0.5     # below this the verdict is NO_DATA
+    upwind_share: 0.25      # at or above this, UNSEEN_WIND_TOWARD
+
+  wind:
+    sigma_measured: 15.0    # degrees, on-site AQS wind
+    sigma_modelled: 25.0    # degrees, Open-Meteo
+    sigma_light: 45.0       # degrees, when speed < light_ms
+    light_ms: 1.5
+    calm_ms: 0.5            # below this the hour is ignored entirely
+
+  # Footprint radius, metres. A facility's own width widens the angular span the bearing
+  # test allows, so a two-kilometre refinery is not judged like a compressor station.
+  # Real polygons come from OpenStreetMap where Overpass answers; these class defaults are
+  # the documented fallback, matched against the facility name in order, first hit wins.
+  # They are assumptions, labelled as such in the data, never presented as measurements.
+  # A facility must plausibly be near the monitor that reports on it. Nominatim will
+  # happily match "PORT ARTHUR FACILITY" to a Port Arthur on another continent, so any
+  # geocoded point beyond this distance from the site's monitor is rejected outright
+  # rather than quietly poisoning bearings, coverage and the map.
+  geocode:
+    max_km_from_monitor: 60
+
+  footprint:
+    default_m: 250
+    by_keyword:
+      - {match: "refinery",           radius_m: 1500}
+      - {match: "chemical",           radius_m: 800}
+      - {match: "carbon black",       radius_m: 800}
+      - {match: "ammonia",            radius_m: 600}
+      - {match: "power",              radius_m: 600}
+      - {match: "gas plant",          radius_m: 400}
+      - {match: "extraction plant",   radius_m: 400}
+      - {match: "terminal",           radius_m: 400}
+      - {match: "tank farm",          radius_m: 400}
+      - {match: "compressor station", radius_m: 150}
+      - {match: "battery",            radius_m: 120}
+      - {match: "injection",          radius_m: 120}
+
+  regional:
+    top_pct: 0.95           # a context monitor is "high" above its own percentile
+    min_share_hours: 0.5    # share of episode hours a context monitor must be high
+    min_monitors_share: 0.5 # share of context monitors with data that must agree
+
+sites:
+  - id: texas-city
+    name: Texas City
+    tz: America/Chicago
+    aeer_counties: [GALVESTON]
+    monitors:
+      - id: "48-167-0005"
+        role: primary
+    context_monitors: ["48-201-1039", "48-201-1035", "48-039-1012"]
+
+  - id: port-arthur
+    name: Port Arthur and Beaumont
+    tz: America/Chicago
+    aeer_counties: [JEFFERSON, ORANGE]
+    monitors:
+      - id: "48-245-0011"
+        role: primary
+      - id: "48-245-0009"
+        role: secondary
+    context_monitors: ["48-361-1083", "48-245-1071"]
+
+  - id: big-spring
+    name: Big Spring
+    tz: America/Chicago
+    aeer_counties: [HOWARD]
+    monitors:
+      - id: "48-227-1072"
+        role: primary
+    context_monitors: []
