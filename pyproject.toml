@@ -1,0 +1,18 @@
+[project]
+name = "plumeprint"
+version = "0.1.0"
+description = "Audits self-reported industrial emission events against the monitor and wind record."
+requires-python = ">=3.11"
+dependencies = [
+  "pandas>=2.0", "numpy>=1.26", "requests>=2.31", "beautifulsoup4>=4.12",
+  "lxml>=5.0", "pyyaml>=6.0", "tqdm>=4.66", "pyarrow>=15.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["pipeline*"]
