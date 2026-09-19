@@ -1,0 +1,66 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}, "flowchart": {"curve": "basis", "htmlLabels": true, "nodeSpacing": 38, "rankSpacing": 52, "padding": 10, "wrappingWidth": 340}}}%%
+flowchart TB
+  subgraph EXT["1 · External sources · public, keyless"]
+    direction LR
+    AQS["EPA AQS bulk zips<br/>hourly SO2 + on-site wind"]:::src
+    AEER["TCEQ AEER<br/>search + detail pages"]:::src
+    OM["Open-Meteo archive<br/>modelled wind"]:::src
+    GEO["Nominatim<br/>facility geocoding"]:::src
+    AQS ~~~ AEER ~~~ OM ~~~ GEO
+  end
+  subgraph PIPE["2 · Offline pipeline · Python · deterministic + statistical"]
+    direction LR
+    ING["Ingest + cache<br/>raw zips, raw HTML"]:::det
+    NORM["Normalize<br/>UTC hours, units, IDs"]:::det
+    EPI["Episode<br/>detection"]:::det
+    FP["Directional fingerprint<br/>CPF + bootstrap CI"]:::stat
+    REC["Two-way reconciliation<br/>+ match confidence"]:::stat
+    COV["Monitor coverage<br/>blind-spot statistics"]:::stat
+    EXP["Export + validate<br/>golden-number tests"]:::det
+    ING --> NORM --> EPI --> REC --> EXP
+    NORM --> FP --> EXP
+    NORM --> COV --> EXP
+  end
+  subgraph DATA["3 · Static data contract · web/public/data"]
+    direction LR
+    J1["sites.json"]:::store
+    J2["series / site / year"]:::store
+    J3["events · episodes · matches"]:::store
+    J5["fingerprint · coverage"]:::store
+    J1 ~~~ J2 ~~~ J3 ~~~ J5
+  end
+  subgraph LLMPRE["4 · LLM precompute · TypeScript scripts"]
+    direction LR
+    EX1["extract-narratives.ts<br/>Claude Haiku 4.5 · JSON schema"]:::llm
+    AG1["run-agent.ts<br/>Claude Sonnet 5 · tool use"]:::llm
+    VER["verifier.ts<br/>numbers · refs · language lint"]:::det
+    OUT1["narratives.json<br/>cases / episode.json"]:::store
+    EX1 --> AG1 --> VER --> OUT1
+  end
+  subgraph WEB["5 · Web app · Next.js on Vercel"]
+    direction LR
+    UI["Investigation workspace<br/>map + rose + two ledgers"]:::ui
+    CASE["Case file view<br/>evidence board + request draft"]:::ui
+    API["/api/investigate · SSE<br/>rate-limited · falls back to cache"]:::llm
+    UI --> CASE --> API
+  end
+  CL["Claude API"]:::llm
+  USER(["Advocate · journalist · judge"]):::user
+  EXT --> PIPE --> DATA --> LLMPRE --> WEB
+  DATA --> WEB
+  LLMPRE <--> CL
+  WEB <--> CL
+  USER --> WEB
+
+  classDef src fill:#EFE7D3,stroke:#8A7A4F,color:#1B1B1F;
+  classDef det fill:#DCE6F2,stroke:#33558B,color:#10233F;
+  classDef stat fill:#E7E0F5,stroke:#5B3FA0,color:#24124D;
+  classDef llm fill:#FCE8D5,stroke:#C2571A,color:#4A1F05;
+  classDef ui fill:#DDF0E8,stroke:#1B7F6B,color:#0B3A30;
+  classDef store fill:#F1F1F1,stroke:#555555,color:#1B1B1F;
+  classDef user fill:#2D3142,stroke:#2D3142,color:#FFFFFF;
+  classDef core fill:#FFF7E8,stroke:#D9381E,stroke-width:2px,color:#1B1B1F;
+  classDef bad fill:#FBE3DE,stroke:#D9381E,color:#5A1207;
+  classDef good fill:#D8EFE9,stroke:#1B7F6B,color:#0B3A30;
+  classDef warn fill:#FFF1CC,stroke:#B7791F,color:#4A3000;
+  classDef mute fill:#E6EAF0,stroke:#64748B,color:#1F2937;

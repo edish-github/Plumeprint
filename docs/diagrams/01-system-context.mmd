@@ -1,0 +1,39 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}, "flowchart": {"curve": "basis", "htmlLabels": true, "nodeSpacing": 38, "rankSpacing": 52, "padding": 10, "wrappingWidth": 340}}}%%
+flowchart LR
+  subgraph USERS["People"]
+    direction TB
+    U1["Community advocate<br/>fenceline resident"]:::user
+    U2["Local journalist"]:::user
+    U3["Student researcher<br/>or hackathon judge"]:::user
+    U1 ~~~ U2 ~~~ U3
+  end
+  subgraph PUBLIC["Public records · no API keys"]
+    direction TB
+    D1["EPA AQS bulk files<br/>hourly SO2 + on-site wind"]:::src
+    D2["TCEQ AEER database<br/>self-reported emission events"]:::src
+    D3["Open-Meteo archive<br/>modelled hourly wind"]:::src
+    D4["OSM Nominatim<br/>facility geocoding"]:::src
+    D1 ~~~ D2 ~~~ D3 ~~~ D4
+  end
+  PP(["<b>PlumePrint</b><br/>audits self-reported pollution<br/>against the air's own record"]):::core
+  C1["Claude API<br/>narrative extraction + investigator"]:::llm
+  M1["Keyless map tiles<br/>OpenFreeMap · Esri imagery"]:::store
+  R1["TCEQ public records office<br/>receives requests the user sends"]:::mute
+  USERS -->|"read case files,<br/>pull leads"| PP
+  PUBLIC -->|"offline ingest,<br/>cached scrape"| PP
+  PP <-->|"tool-use loop"| C1
+  PP -->|"basemap"| M1
+  PP -.->|"drafts request"| R1
+
+  classDef src fill:#EFE7D3,stroke:#8A7A4F,color:#1B1B1F;
+  classDef det fill:#DCE6F2,stroke:#33558B,color:#10233F;
+  classDef stat fill:#E7E0F5,stroke:#5B3FA0,color:#24124D;
+  classDef llm fill:#FCE8D5,stroke:#C2571A,color:#4A1F05;
+  classDef ui fill:#DDF0E8,stroke:#1B7F6B,color:#0B3A30;
+  classDef store fill:#F1F1F1,stroke:#555555,color:#1B1B1F;
+  classDef user fill:#2D3142,stroke:#2D3142,color:#FFFFFF;
+  classDef core fill:#FFF7E8,stroke:#D9381E,stroke-width:2px,color:#1B1B1F;
+  classDef bad fill:#FBE3DE,stroke:#D9381E,color:#5A1207;
+  classDef good fill:#D8EFE9,stroke:#1B7F6B,color:#0B3A30;
+  classDef warn fill:#FFF1CC,stroke:#B7791F,color:#4A3000;
+  classDef mute fill:#E6EAF0,stroke:#64748B,color:#1F2937;
