@@ -1,0 +1,18 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}}}%%
+stateDiagram-v2
+  direction TB
+  [*] --> CachedShown: page load
+  CachedShown --> Requesting: user clicks Re-run
+  Requesting --> CachedShown: over budget · no key · timeout
+  Requesting --> Planning: stream opened
+  Planning --> CallingTool: model requests a tool
+  CallingTool --> Observing: tool result returned
+  Observing --> CallingTool: needs more evidence
+  Observing --> Drafting: enough evidence, or 8 turns used
+  Drafting --> Verifying: submit_case_file
+  Verifying --> Published: all checks pass
+  Verifying --> Retrying: violations found
+  Retrying --> Verifying: revised draft
+  Retrying --> TemplateFallback: second failure
+  TemplateFallback --> Published
+  Published --> [*]

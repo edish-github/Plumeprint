@@ -1,0 +1,39 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}, "sequence": {"mirrorActors": false, "messageMargin": 28, "boxMargin": 8, "wrap": true, "width": 170}}}%%
+sequenceDiagram
+  autonumber
+  actor U as User
+  participant UI as Case view
+  participant C as Cached cases
+  participant API as /api/investigate
+  participant CL as Claude Sonnet 5
+  participant T as Tools · pure functions over JSON
+  participant V as Verifier
+  U->>UI: Open episode
+  UI->>C: GET cases/{episode}.json
+  C-->>UI: Cached case renders instantly
+  U->>UI: Click "Re-run investigation"
+  UI->>API: POST siteId + episodeId
+  API->>API: Rate limit + daily budget check
+  alt over budget, key missing, or timeout
+    API-->>UI: cached = true, keep cached case
+  else live run
+    API->>CL: System prompt + tools + episode brief
+    loop until submit_case_file · max 8 turns
+      CL-->>API: tool_use · name + input
+      API->>T: Run tool
+      T-->>API: JSON result, numbers carry ids
+      API-->>UI: SSE step · tool, args, one-line summary
+      API->>CL: tool_result
+    end
+    CL-->>API: tool_use · submit_case_file
+    API->>V: Check numbers, references, language
+    alt passes
+      V-->>API: ok
+    else violations
+      API->>CL: One retry, violations listed
+      CL-->>API: Revised draft
+      API->>V: Re-check, else template fallback
+    end
+    API-->>UI: SSE case_file
+  end
+  UI-->>U: Evidence board + verdict + request draft
