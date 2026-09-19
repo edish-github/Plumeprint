@@ -1,0 +1,36 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}, "flowchart": {"curve": "basis", "htmlLabels": true, "nodeSpacing": 38, "rankSpacing": 52, "padding": 10, "wrappingWidth": 340}}}%%
+flowchart LR
+  subgraph IN["Inputs per episode–report pair"]
+    I1["Episode hours + ppb"]:::det
+    I2["Report start and end · UTC"]:::src
+    I3["Report contaminants"]:::src
+    I4["Hourly wind direction + speed<br/>and which wind source"]:::det
+    I5["Facility bearing, distance,<br/>angular half-width"]:::det
+  end
+  subgraph SC["Component scores · 0 to 1"]
+    S1["<b>S_time</b><br/>share of episode hours inside<br/>the report window −2 h / +2 h"]:::stat
+    S2["<b>S_spec</b><br/>clip of 72 h ÷ report duration<br/>to the range 0.15 – 1"]:::stat
+    S3["<b>S_poll</b><br/>1 if SO2 listed, else 0"]:::stat
+    S4["<b>S_bearing</b><br/>ppb-weighted mean of exp(−½ (Δ/σ)²)<br/>Δ = angle beyond the facility's span"]:::stat
+  end
+  I1 & I2 --> S1
+  I2 --> S2
+  I3 --> S3
+  I1 & I4 & I5 --> S4
+  S1 & S2 & S3 & S4 --> C["<b>confidence</b> =<br/>S_poll × √(S_time · S_spec) × (0.4 + 0.6 · S_bearing)"]:::core
+  C --> L1["Ranks candidate reports<br/>best one becomes the match"]:::det
+  C --> L2["Confidence meter in the UI"]:::ui
+  C --> L3["Verdict itself comes from<br/>the rule flow in diagram 05"]:::mute
+
+  classDef src fill:#EFE7D3,stroke:#8A7A4F,color:#1B1B1F;
+  classDef det fill:#DCE6F2,stroke:#33558B,color:#10233F;
+  classDef stat fill:#E7E0F5,stroke:#5B3FA0,color:#24124D;
+  classDef llm fill:#FCE8D5,stroke:#C2571A,color:#4A1F05;
+  classDef ui fill:#DDF0E8,stroke:#1B7F6B,color:#0B3A30;
+  classDef store fill:#F1F1F1,stroke:#555555,color:#1B1B1F;
+  classDef user fill:#2D3142,stroke:#2D3142,color:#FFFFFF;
+  classDef core fill:#FFF7E8,stroke:#D9381E,stroke-width:2px,color:#1B1B1F;
+  classDef bad fill:#FBE3DE,stroke:#D9381E,color:#5A1207;
+  classDef good fill:#D8EFE9,stroke:#1B7F6B,color:#0B3A30;
+  classDef warn fill:#FFF1CC,stroke:#B7791F,color:#4A3000;
+  classDef mute fill:#E6EAF0,stroke:#64748B,color:#1F2937;
