@@ -1,0 +1,38 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}, "flowchart": {"curve": "basis", "htmlLabels": true, "nodeSpacing": 38, "rankSpacing": 52, "padding": 10, "wrappingWidth": 340}}}%%
+flowchart TD
+  subgraph DEV["Developer laptop"]
+    direction LR
+    P["make data<br/>Python pipeline"]:::det
+    L["pnpm llm:all<br/>narratives + cases"]:::llm
+    G["git commit + push<br/>data JSON included"]:::store
+    P --> L --> G
+  end
+  GH["GitHub repo · public · MIT<br/>the link judges open"]:::store
+  subgraph VERCEL["Vercel project"]
+    direction LR
+    B["Build<br/>next build"]:::det
+    CDN["Static pages + data JSON<br/>edge CDN"]:::ui
+    FN["Serverless function<br/>/api/investigate"]:::llm
+    B --> CDN
+    B --> FN
+  end
+  ENV["Env vars · ANTHROPIC_API_KEY<br/>DAILY_BUDGET_USD · LIVE_AGENT"]:::store
+  AN["Claude API"]:::llm
+  J(["Judge's browser"]):::user
+  DEV --> GH --> VERCEL
+  ENV -.-> VERCEL
+  VERCEL <--> AN
+  J --> VERCEL
+
+  classDef src fill:#EFE7D3,stroke:#8A7A4F,color:#1B1B1F;
+  classDef det fill:#DCE6F2,stroke:#33558B,color:#10233F;
+  classDef stat fill:#E7E0F5,stroke:#5B3FA0,color:#24124D;
+  classDef llm fill:#FCE8D5,stroke:#C2571A,color:#4A1F05;
+  classDef ui fill:#DDF0E8,stroke:#1B7F6B,color:#0B3A30;
+  classDef store fill:#F1F1F1,stroke:#555555,color:#1B1B1F;
+  classDef user fill:#2D3142,stroke:#2D3142,color:#FFFFFF;
+  classDef core fill:#FFF7E8,stroke:#D9381E,stroke-width:2px,color:#1B1B1F;
+  classDef bad fill:#FBE3DE,stroke:#D9381E,color:#5A1207;
+  classDef good fill:#D8EFE9,stroke:#1B7F6B,color:#0B3A30;
+  classDef warn fill:#FFF1CC,stroke:#B7791F,color:#4A3000;
+  classDef mute fill:#E6EAF0,stroke:#64748B,color:#1F2937;

@@ -1,0 +1,54 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}, "flowchart": {"curve": "basis", "htmlLabels": true, "nodeSpacing": 38, "rankSpacing": 52, "padding": 10, "wrappingWidth": 340}}}%%
+flowchart TD
+  R1["/ · landing<br/>hook + three sites"]:::ui
+  R4["/methods<br/>methods + limits"]:::ui
+  R2["/site/[siteId]<br/>investigation workspace"]:::ui
+  R3["/site/[siteId]/case/[episodeId]<br/>case file"]:::ui
+  R1 --> R2 --> R3
+  R1 --> R4
+  subgraph WS["Workspace components"]
+    C1["SiteMap<br/>MapLibre + GeoJSON layers"]:::ui
+    C4["TwoLedgers<br/>SVG lanes + threads"]:::ui
+    C5["StatStrip<br/>the 2×2 headline numbers"]:::ui
+    C6["EpisodeList<br/>+ filters"]:::ui
+    C2["RoseLayer<br/>CPF wedges as geo polygons"]:::ui
+    C3["UpwindCone<br/>per-hour wedges + playback"]:::ui
+    C1 --> C2 & C3
+  end
+  subgraph CS["Case components"]
+    C7["EvidenceBoard<br/>agent steps"]:::ui
+    C8["CaseFile<br/>+ RequestDraft"]:::ui
+  end
+  R2 --> C1 & C4 & C5 & C6
+  R3 --> C7 & C8
+  subgraph ST["Hooks + state"]
+    S2["selection store · zustand<br/>episode, report, year, brush"]:::det
+    S1["useSiteData<br/>lazy JSON by year"]:::det
+    S3["useInvestigation<br/>SSE client + cached fallback"]:::det
+  end
+  C4 & C6 --> S2
+  C5 --> S1
+  C7 --> S3
+  C8 --> S1
+  subgraph LB["Libraries + backends"]
+    S4["lib/geo.ts<br/>bearing, destination, wedge"]:::det
+    DATA["public/data/*.json"]:::store
+    R5["/api/investigate<br/>route handler · SSE"]:::llm
+  end
+  C2 & C3 --> S4
+  S1 --> DATA
+  S3 --> R5
+  S3 -.->|"fallback"| DATA
+
+  classDef src fill:#EFE7D3,stroke:#8A7A4F,color:#1B1B1F;
+  classDef det fill:#DCE6F2,stroke:#33558B,color:#10233F;
+  classDef stat fill:#E7E0F5,stroke:#5B3FA0,color:#24124D;
+  classDef llm fill:#FCE8D5,stroke:#C2571A,color:#4A1F05;
+  classDef ui fill:#DDF0E8,stroke:#1B7F6B,color:#0B3A30;
+  classDef store fill:#F1F1F1,stroke:#555555,color:#1B1B1F;
+  classDef user fill:#2D3142,stroke:#2D3142,color:#FFFFFF;
+  classDef core fill:#FFF7E8,stroke:#D9381E,stroke-width:2px,color:#1B1B1F;
+  classDef bad fill:#FBE3DE,stroke:#D9381E,color:#5A1207;
+  classDef good fill:#D8EFE9,stroke:#1B7F6B,color:#0B3A30;
+  classDef warn fill:#FFF1CC,stroke:#B7791F,color:#4A3000;
+  classDef mute fill:#E6EAF0,stroke:#64748B,color:#1F2937;
