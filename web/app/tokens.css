@@ -1,0 +1,335 @@
+/**
+ * The design system.
+ *
+ * One accent, one paper, one ink. Meaning is carried by weight, size and space before it
+ * is carried by colour, because a page of coloured pills reads as decoration and this
+ * page is making an argument.
+ *
+ * Verdict colours exist, but they are desaturated and applied to a small dot and a label,
+ * never to a filled badge. The eye should land on the number, then the sentence.
+ */
+
+:root {
+  /* Paper and ink. Warm, not clinical: this is a record, not a dashboard. */
+  --paper: #faf7f2;
+  --paper-warm: #f4efe6;
+  --surface: #fffdfa;
+  --surface-sunk: #f0eade;
+  --ink: #17171a;
+  --ink-soft: #46443f;
+  --ink-mute: #85806f;
+  --hairline: #e4ddcf;
+  --hairline-strong: #cdc4b1;
+
+  /* One accent, used sparingly: links, the live thread, the emphasised number. */
+  --accent: #b4441b;
+  --accent-soft: #f3e2d6;
+  --ink-invert: #faf7f2;
+  --dark: #1e1f1c;
+  --dark-soft: #2a2b27;
+
+  /* Verdict hues, desaturated so a page of them stays calm. */
+  --matched: #3f7a63;
+  --weak: #a07736;
+  --unexplained: #b4441b;
+  --regional: #5c6b83;
+  --unseen: #8a8577;
+
+  --font-display: var(--font-serif), "Iowan Old Style", Georgia, serif;
+  --font-body: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, Menlo, monospace;
+
+  /* A modest type scale: three display sizes, two body sizes, one caption. */
+  --t-caption: 0.78rem;
+  --t-small: 0.9rem;
+  --t-body: 1.0625rem;
+  --t-lead: 1.3rem;
+  --t-h3: 1.5rem;
+  --t-h2: clamp(2rem, 3.4vw, 2.9rem);
+  --t-h1: clamp(2.8rem, 6.4vw, 5rem);
+  --t-figure: clamp(3rem, 7vw, 5.5rem);
+
+  --s1: 0.25rem; --s2: 0.5rem; --s3: 0.75rem; --s4: 1rem;
+  --s5: 1.5rem; --s6: 2rem; --s7: 3rem; --s8: 4.5rem; --s9: 7rem;
+
+  --r-sm: 6px;
+  --r: 14px;
+  --r-lg: 24px;
+  --measure: 34rem;
+  --page: 74rem;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+}
+
+/* ---------------------------------------------------------------- type */
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h1 { font-size: var(--t-h1); }
+h2 { font-size: var(--t-h2); }
+h3 { font-size: var(--t-h3); line-height: 1.2; }
+
+p { margin: 0 0 var(--s4); max-width: var(--measure); }
+
+.lead {
+  font-size: var(--t-lead);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 40rem;
+}
+
+.small { font-size: var(--t-small); color: var(--ink-soft); }
+
+.caption {
+  font-size: var(--t-caption);
+  color: var(--ink-mute);
+  letter-spacing: 0.02em;
+}
+
+/* Small caps label above a section. Sets rhythm without another heading size. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin: 0 0 var(--s3);
+}
+
+.mono { font-family: var(--font-mono); font-size: 0.92em; letter-spacing: -0.01em; }
+
+.serif-em { font-family: var(--font-display); font-style: italic; }
+
+a { color: inherit; text-decoration-color: var(--hairline-strong); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--accent); }
+
+/* ---------------------------------------------------------------- layout */
+
+.page { max-width: var(--page); margin: 0 auto; padding: 0 var(--s5); }
+.page-narrow { max-width: 52rem; margin: 0 auto; padding: 0 var(--s5); }
+
+/* Card stack spacing:
+ * Reduced, consistent vertical rhythm between cards across the page.
+ */
+section {
+  padding: 0;
+  margin-top: clamp(1.25rem, 2vw, 1.75rem);
+}
+section:last-of-type {
+  padding-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+
+.rule { border: 0; border-top: 1px solid var(--hairline); margin: var(--s7) 0; }
+
+.cols {
+  display: grid;
+  gap: var(--s6);
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.split {
+  display: grid;
+  gap: var(--s7);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 60rem) {
+  .split { grid-template-columns: 1.1fr 1fr; align-items: start; }
+  .split-wide { grid-template-columns: 1fr 1.6fr; }
+}
+
+/* ---------------------------------------------------------------- surfaces */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  padding: var(--s6);
+  box-shadow: 0 1px 3px rgba(23, 23, 26, 0.03);
+}
+
+.panel-flush { padding: var(--s4); }
+
+.panel-dark {
+  background: var(--dark);
+  color: var(--ink-invert);
+  border-radius: var(--r-lg);
+  padding: var(--s7);
+}
+
+.panel-dark h2, .panel-dark h3 { color: var(--ink-invert); }
+.panel-dark .small, .panel-dark .caption { color: #b9b4a6; }
+
+.tile {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  padding: var(--s6);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.tile:hover { border-color: var(--hairline-strong); transform: translateY(-2px); }
+
+/* ---------------------------------------------------------------- figures */
+
+/* The big number. Display face, tabular figures, tight leading. */
+.figure {
+  font-family: var(--font-display);
+  font-size: var(--t-figure);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.figure-sm {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.of { color: var(--ink-mute); font-size: 0.42em; letter-spacing: 0; }
+
+/* ---------------------------------------------------------------- verdicts */
+
+/* A dot and a word. No filled badge, no border, no shout. */
+.verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-size: var(--t-caption);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.verdict::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.d-MATCHED { color: var(--matched); }
+.d-WEAK_MATCH { color: var(--weak); }
+.d-UNEXPLAINED { color: var(--unexplained); }
+.d-REGIONAL { color: var(--regional); }
+.d-SEEN { color: var(--matched); }
+.d-FAINT { color: var(--weak); }
+.d-UNSEEN_WIND_TOWARD { color: var(--unexplained); }
+.d-UNSEEN_WIND_AWAY { color: var(--unseen); }
+.d-UNSEEN_UNKNOWN { color: var(--unseen); }
+.d-NO_DATA { color: var(--ink-mute); }
+
+/* ---------------------------------------------------------------- records */
+
+/* Rows, not tables: hairlines only, no vertical rules, no zebra. */
+.rows { width: 100%; border-collapse: collapse; }
+
+.rows th {
+  font-family: var(--font-mono);
+  font-size: var(--t-caption);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--ink-mute);
+  text-align: left;
+  padding: 0 var(--s4) var(--s3) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.rows td {
+  padding: var(--s4) var(--s4) var(--s4) 0;
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: baseline;
+  font-size: var(--t-small);
+}
+
+.rows tr:last-child td { border-bottom: 0; }
+.rows tbody tr:hover td { background: var(--paper-warm); }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- controls */
+
+.btn {
+  font: inherit;
+  font-size: var(--t-small);
+  cursor: pointer;
+  background: var(--surface);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  padding: 0.4em 1.1em;
+  color: var(--ink-soft);
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.btn:hover { border-color: var(--ink-soft); color: var(--ink); }
+
+.btn[aria-pressed="true"] {
+  background: var(--dark);
+  border-color: var(--dark);
+  color: var(--ink-invert);
+}
+
+.btn-solid {
+  background: var(--dark);
+  border-color: var(--dark);
+  color: var(--ink-invert);
+  padding: 0.6em 1.4em;
+}
+
+.btn-solid:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* ---------------------------------------------------------------- texture */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(120% 90% at 12% 8%, #fdf4ea 0%, rgba(253, 244, 234, 0) 60%),
+    radial-gradient(90% 80% at 88% 0%, #f1e8f6 0%, rgba(241, 232, 246, 0) 55%),
+    radial-gradient(120% 120% at 70% 110%, #f8ddcd 0%, rgba(248, 221, 205, 0) 60%),
+    var(--paper-warm);
+}
+
+/* A soft grain wash over the hero, echoing paper without loading an image. */
+.grain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .tile:hover { transform: none; }
+}
