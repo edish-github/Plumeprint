@@ -1,0 +1,52 @@
+{
+ "episode_id": "48-245-0011_20231019T02",
+ "generated_at": "2026-09-18T08:38:04Z",
+ "model": "none (deterministic template)",
+ "verified": "template",
+ "trace": [],
+ "case": {
+  "verdict": "UNEXPLAINED",
+  "agrees_with_rules": true,
+  "confidence_label": "low",
+  "headline": "No filed report covers this 26.7 ppb episode.",
+  "reasoning": [
+   {
+    "claim": "The monitor recorded 26.7 ppb at its peak on Oct 18, 2023, 9:00 PM, against a background near 0.3 ppb, over 1 hours.",
+    "evidence": [
+     "ep:48-245-0011_20231019T02",
+     "mon:48-245-0011"
+    ]
+   },
+   {
+    "claim": "Through the episode the wind came from the south, measured at the monitor.",
+    "evidence": [
+     "ep:48-245-0011_20231019T02"
+    ]
+   },
+   {
+    "claim": "No facility in Jefferson or Orange County filed a report listing this pollutant for this window.",
+    "evidence": [
+     "ep:48-245-0011_20231019T02"
+    ]
+   },
+   {
+    "claim": "The nearest facility with public coordinates is Motiva Enterprises Port Arthur Chemicals, 1.8 km away.",
+    "evidence": [
+     "fac:RN100217389"
+    ]
+   }
+  ],
+  "innocent_explanations": [
+   "A release below the reportable quantity would leave no filed report at all.",
+   "Permitted, routine emissions can build up when the air is still and the plume stays low.",
+   "Ships, trucks and other mobile sources are not covered by this reporting system.",
+   "A source outside the searched counties would not appear in this search."
+  ],
+  "what_would_settle_it": [
+   "Sub-hourly data from the monitor for this window, which would show whether the rise was a sharp plume or a slow build.",
+   "Any complaint or investigation records the agency holds for this date.",
+   "Records of any emission event, maintenance, startup or shutdown at facilities upwind within 24 hours."
+  ],
+  "request_draft": "To: Texas Commission on Environmental Quality, Public Information Coordinator\nSubject: Public information request, air monitoring and incident records, Port Arthur and Beaumont\n\nDear Public Information Coordinator,\n\nUnder the Texas Public Information Act, I request copies of the following records.\n\n1. All ambient air monitoring data, at the finest time resolution held, for monitor 48-245-0011 from Oct 18, 2023, 9:00 PM to Oct 18, 2023, 10:00 PM local time.\n2. Any citizen complaints, investigation reports or field notes relating to air quality in Port Arthur and Beaumont for that period.\n3. Any emission event, maintenance, startup or shutdown notifications received for facilities in Jefferson or Orange County covering that period, including any submitted after the deadline.\n\nThis is a request for public records. It is not an allegation that any facility did anything improper.\n\nIf any portion is withheld, please cite the exemption claimed and release the remainder. If fees will exceed $50, please contact me first with an estimate.\n\nSincerely,\n[your name]\n[your address]\n[your email and phone]"
+ }
+}
