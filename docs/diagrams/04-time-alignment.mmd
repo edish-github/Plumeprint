@@ -1,0 +1,24 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}, "flowchart": {"curve": "basis", "htmlLabels": true, "nodeSpacing": 38, "rankSpacing": 52, "padding": 10, "wrappingWidth": 340}}}%%
+flowchart LR
+  A["<b>EPA AQS hourly file</b><br/>Date/Time Local = local STANDARD time<br/>Date/Time GMT columns also present<br/>values are hour-beginning averages"]:::src
+  B["<b>TCEQ AEER reports</b><br/>local CLOCK time, DST applies<br/>e.g. 04/20/2023 08:00 AM"]:::src
+  C["<b>Open-Meteo archive</b><br/>request timezone=GMT<br/>values are instantaneous on the hour"]:::src
+  U(["<b>UTC hour index</b><br/>the single source of truth"]):::core
+  A -->|"use the GMT columns"| U
+  B -->|"America/Chicago to UTC<br/>ambiguous: first · nonexistent: shift forward"| U
+  C -->|"vector-mean of t and t+1 h"| U
+  U --> V["Verified alignment<br/>report start 08:00 AM CDT<br/>= 13:00 UTC = 07:00 LST monitor peak"]:::good
+  U --> D["UI converts to site local time<br/>only at render"]:::ui
+
+  classDef src fill:#EFE7D3,stroke:#8A7A4F,color:#1B1B1F;
+  classDef det fill:#DCE6F2,stroke:#33558B,color:#10233F;
+  classDef stat fill:#E7E0F5,stroke:#5B3FA0,color:#24124D;
+  classDef llm fill:#FCE8D5,stroke:#C2571A,color:#4A1F05;
+  classDef ui fill:#DDF0E8,stroke:#1B7F6B,color:#0B3A30;
+  classDef store fill:#F1F1F1,stroke:#555555,color:#1B1B1F;
+  classDef user fill:#2D3142,stroke:#2D3142,color:#FFFFFF;
+  classDef core fill:#FFF7E8,stroke:#D9381E,stroke-width:2px,color:#1B1B1F;
+  classDef bad fill:#FBE3DE,stroke:#D9381E,color:#5A1207;
+  classDef good fill:#D8EFE9,stroke:#1B7F6B,color:#0B3A30;
+  classDef warn fill:#FFF1CC,stroke:#B7791F,color:#4A3000;
+  classDef mute fill:#E6EAF0,stroke:#64748B,color:#1F2937;
