@@ -1,0 +1,28 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Liberation Sans, Arial, Helvetica", "fontSize": "15px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#1B1B1F", "primaryTextColor": "#1B1B1F", "lineColor": "#44474F", "secondaryColor": "#F6F3EC", "tertiaryColor": "#FBFAF7", "clusterBkg": "#FBFAF7", "clusterBorder": "#B9B4A6", "edgeLabelBackground": "#FFFFFF", "noteBkgColor": "#FFF7E8", "noteBorderColor": "#C2571A", "actorBkg": "#FFFFFF", "actorBorder": "#1B1B1F", "signalColor": "#44474F", "labelBoxBkgColor": "#F6F3EC", "labelBoxBorderColor": "#B9B4A6", "loopTextColor": "#1B1B1F", "activationBkgColor": "#FCE8D5", "activationBorderColor": "#C2571A"}, "flowchart": {"curve": "basis", "htmlLabels": true, "nodeSpacing": 38, "rankSpacing": 52, "padding": 10, "wrappingWidth": 340}}}%%
+flowchart TD
+  E["Monitor episode<br/>contiguous high-SO2 hours"]:::det --> Q1{{"Any report overlaps the window<br/>2 h before to 2 h after?"}}
+  Q1 -- no --> Q0{{"Other SO2 monitors<br/>also high right then?"}}
+  Q0 -- yes --> V5["REGIONAL<br/>not a local source"]:::mute
+  Q0 -- "no, or none nearby" --> V1["UNEXPLAINED<br/>no matching report"]:::bad
+  Q1 -- yes --> Q2{{"Does any of them<br/>list SO2 above 0 lb?"}}
+  Q2 -- no --> V2["UNEXPLAINED<br/>concurrent non-SO2 report noted"]:::bad
+  Q2 -- yes --> Q3{{"Report covers at least half<br/>of the episode hours?"}}
+  Q3 -- no --> V3["WEAK MATCH<br/>partial or indirect fit"]:::warn
+  Q3 -- yes --> Q4{{"Facility located, and upwind-consistent<br/>S_bearing at least 0.5?"}}
+  Q4 -- no --> V3
+  Q4 -- yes --> Q5{{"Report window<br/>longer than 7 days?"}}
+  Q5 -- yes --> V3
+  Q5 -- no --> V4["MATCHED<br/>time + direction + pollutant"]:::good
+
+  classDef src fill:#EFE7D3,stroke:#8A7A4F,color:#1B1B1F;
+  classDef det fill:#DCE6F2,stroke:#33558B,color:#10233F;
+  classDef stat fill:#E7E0F5,stroke:#5B3FA0,color:#24124D;
+  classDef llm fill:#FCE8D5,stroke:#C2571A,color:#4A1F05;
+  classDef ui fill:#DDF0E8,stroke:#1B7F6B,color:#0B3A30;
+  classDef store fill:#F1F1F1,stroke:#555555,color:#1B1B1F;
+  classDef user fill:#2D3142,stroke:#2D3142,color:#FFFFFF;
+  classDef core fill:#FFF7E8,stroke:#D9381E,stroke-width:2px,color:#1B1B1F;
+  classDef bad fill:#FBE3DE,stroke:#D9381E,color:#5A1207;
+  classDef good fill:#D8EFE9,stroke:#1B7F6B,color:#0B3A30;
+  classDef warn fill:#FFF1CC,stroke:#B7791F,color:#4A3000;
+  classDef mute fill:#E6EAF0,stroke:#64748B,color:#1F2937;
