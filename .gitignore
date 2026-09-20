@@ -13,6 +13,7 @@ web/node_modules/
 web/.next/
 web/out/
 *.tsbuildinfo
+.vercel/
 
 # Reference & personal docs
 research/
