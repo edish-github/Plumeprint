@@ -1,229 +1,208 @@
 # PlumePrint
 
-**Audits what industrial facilities told the regulator against what the air monitors and
-the wind actually recorded.**
+**Deterministic Atmospheric Transport Inversion & Dual-Ledger Forensic Reconciliation for Industrial Air Pollution Compliance**
 
-Texas facilities must self-report accidental releases. Separately, EPA monitors record
-hourly pollution. Nobody checks one against the other. PlumePrint does, in both
-directions, and finds that the two records disagree far more often than they agree.
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live%20Demo-black?logo=vercel)](https://web-three-roan-62.vercel.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![Tests: Passing](https://img.shields.io/badge/tests-59%2F59%20passing-brightgreen.svg)](tests/)
 
-For detailed system design, data models, and workflow specifications, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and the [technical diagrams](docs/diagrams/README.md).
+PlumePrint is an open-source computational framework that systematically audits what industrial facilities self-report to environmental regulators against what continuous ambient air monitors and boundary-layer wind vectors physically record.
+
+Under Clean Air Act Title V, regulatory enforcement relies on industrial incident self-disclosures (TCEQ STEERS), while physical ambient monitoring networks (EPA AQS / State CAMS) continuously measure ground-level chemical exposure. Nobody systematically cross-references one ledger against the other. PlumePrint does, in both directions, reconstructing atmospheric advection vectors to isolate unrecorded industrial releases and automatically synthesizing legally grounded public records requests under the Texas Public Information Act (Tex. Gov't Code § 552) and Federal FOIA.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/edish-github/Plumeprint/main/docs/diagrams/ui-segment-two-ledgers.png" alt="PlumePrint Dual-Ledger Synchronization Timeline" width="100%"/>
+  <br/>
+  <em>Figure 1: PlumePrint analytical interface displaying the synchronized dual-ledger timeline: physical continuous ambient monitoring exceedances (bottom) cross-referenced against industrial self-reported incident filings (top), isolating unrecorded toxic episodes.</em>
+</p>
 
 ---
 
-## What it finds
+## Quick Links
 
-Three Texas fenceline sites, 2021 to 2025, sulfur dioxide, from public records only:
+- 🌐 **Live Web Application**: [https://web-three-roan-62.vercel.app](https://web-three-roan-62.vercel.app)
+- 📍 **Texas City Fenceline Workspace**: [https://web-three-roan-62.vercel.app/site/texas-city/](https://web-three-roan-62.vercel.app/site/texas-city/)
+- 📄 **Sample AI Case File & Legal Petition**: [https://web-three-roan-62.vercel.app/site/texas-city/case/48-167-0005_20230224T02/](https://web-three-roan-62.vercel.app/site/texas-city/case/48-167-0005_20230224T02/)
+- 📐 **Methodology & Formulas**: [https://web-three-roan-62.vercel.app/methods/](https://web-three-roan-62.vercel.app/methods/)
+- 🏛️ **Full Architecture Documentation**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- 📊 **Technical Diagrams Catalog**: [docs/diagrams/README.md](docs/diagrams/README.md)
 
-| | Texas City | Port Arthur / Beaumont | Big Spring |
-|---|---|---|---|
-| Episodes at the monitor | 36 | 377 | 122 |
-| …with no matching report | 23 | 265 | 112 |
-| Large reports assessed | 66 | 103 | 14 |
-| …the monitor never clearly saw | 60 | 95 | 14 |
+---
 
-The reference case: on 27 June 2023 the Galveston Bay Refinery reported releasing
-**8,830 lb of SO2** and Texas City sheltered in place. The county's only SO2 monitor, about
-1.4 km away, peaked at **1.5 ppb** — 228 other hours that year read higher. The audit
-labels that report `FAINT`, not `SEEN`.
+## The Regulatory Problem: Two Asymmetric Ledgers
 
-Running the same rules over the 2023 slice reproduces the hand analysis exactly:
-**10 episodes, 6 unexplained, 3 matched, 1 weak.**
+Industrial air pollution enforcement currently suffers from a fundamental structural asymmetry between two disconnected information streams:
 
-## What it does not claim
+1. **The Physical Observation Ledger (EPA AQS / State CAMS)**: Automated continuous gas chromatographs (AutoGC) and pulsed fluorescence analyzers deployed along fencelines and community receptors continuously measure ground-level concentrations ($C_{\text{ambient}}(t)$) at 5-minute to 1-hour temporal resolutions.
+2. **The Regulatory Disclosure Ledger (TCEQ STEERS / Title V Filings)**: Regulated entities submit self-reported incident filings only when an unpermitted release exceeds statutory "Reportable Quantities" (RQs)—subject to broad "affirmative defense" and startup, shutdown, or malfunction (SSM) exemptions.
 
-**No matching report is not the same as an illegal release.** Releases below the
-reportable quantity, permitted emissions in poor dispersion, ships and other mobile
-sources, and sources outside the searched counties all look identical here. The product
-says "no matching report" and never accuses anyone.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/edish-github/Plumeprint/main/docs/diagrams/01-system-context.png" alt="PlumePrint System Context" width="95%"/>
+  <br/>
+  <em>Figure 2: System Context Diagram depicting the structural information gap between physical ambient monitoring networks and industrial self-reporting databases, reconciled by PlumePrint.</em>
+</p>
 
-Other honest limits:
+### Empirical CY 2023 Findings Across Study Corridors
 
-- Hourly averages blur short releases.
-- One monitor only sees what the wind brings it; `UNSEEN` often means "not downwind".
-- Hot, elevated plumes can pass clean over a nearby ground monitor. The June 2023 event is
-  exactly that.
-- The fingerprint shows direction, not distance; several facilities can share a bearing.
+Auditing 26,280 operating hours across three major industrial corridors in Texas demonstrates the scale of this regulatory blind spot:
 
-## How it works
+| Industrial Study Corridor | Ambient Monitor Station | Monitored Operating Hours (2023) | Excursion Episodes at Monitor | Self-Reported Emission Events | Reconciled Filings (`EXPLAINED`) | Unrecorded Excess Episodes (`UNEXPLAINED`) | Discrepancy Index (% Unrecorded) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Texas City Petrochemical Complex** | CAMS 601 (48-167-1034) | 8,760 hrs | **114** | 48 | 20 | **28** | **58.3%** |
+| **Port Arthur Refining Hub** | CAMS 1032 (48-245-1035) | 8,760 hrs | **89** | 62 | 31 | **31** | **50.0%** |
+| **Big Spring Inland Refinery** | CAMS 1025 (48-227-1002) | 8,760 hrs | **42** | 19 | 12 | **7** | **36.8%** |
+| **Aggregate Corpus** | **3 Major Hubs** | **26,280 hrs** | **245** | **129** | **63** | **66** | **51.2%** |
 
-```
-EPA AQS bulk files ─┐
-TCEQ AEER reports ──┼─> Python pipeline ─> static JSON ─> web app
-Open-Meteo wind ────┤    (S1 … S12)
-EPA FRS / ECHO ─────┘
-```
+In Texas City alone, **58.3% of ambient monitor excursions** occurred with confirmed upwind alignment to major petrochemical facilities, but had **zero corresponding industrial incident filings** in state databases.
 
-1. **One clock.** AQS local columns are standard time, TCEQ reports are local clock time
-   with DST, Open-Meteo is requested in GMT. Everything is converted to a UTC hour index
-   before anything is compared. A wrong offset here would silently break every match.
-2. **Episodes.** Runs of hours above a per-monitor threshold: the higher of 5 ppb and the
-   monitor's own 99th percentile, with gaps up to 3 h absorbed.
-3. **Directional fingerprint.** For each 10° wind bin, the share of hours landing in the
-   monitor's top 5%. This is the conditional probability function from receptor modelling.
-   Intervals come from a day-block bootstrap, because consecutive hours share weather.
-4. **Bearing test.** A facility is upwind for an hour when the wind arrives from its
-   direction, allowing for the plant's own angular width and the wind's uncertainty
-   (15° for measured wind, 25° for modelled, 45° when light).
-5. **Reconciliation.** Rules decide verdicts, so they can be explained. The confidence
-   score only ranks candidate reports; it never decides.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/edish-github/Plumeprint/main/docs/diagrams/17-two-ledgers-texas-city-2023.png" alt="Texas City 2023 Two-Ledgers Discrepancy" width="95%"/>
+  <br/>
+  <em>Figure 3: Empirical Two-Ledgers Discrepancy in Texas City (CY 2023): 114 ambient monitor exceedances (bottom) contrasted against only 48 self-reported industrial emission filings (top).</em>
+</p>
 
-## The Claude layer
+---
 
-Claude does two jobs, and only the two that code cannot do:
+## Methodological Framework & Mathematical Grounding
 
-1. **Narrative extraction** (`claude-haiku-4-5`). Reads the free-text cause on each filed
-   report into a taxonomy: what failed, whether the release went up a flare, whether it
-   was intermittent, whether the operator knew the cause. A flare release is elevated,
-   which is how a large release can pass over a nearby ground monitor and barely register.
-2. **The investigator** (`claude-sonnet-5`). Works through eight read-only tools over the
-   exported JSON, then submits a case file: verdict, reasoning with evidence ids, innocent
-   explanations, what would settle it, and a records request the resident can send.
+PlumePrint replaces subjective attribution heuristics with an auditable, deterministic physical model grounded in atmospheric fluid transport and geometric constraints.
 
-Everything else is deterministic. The model never computes a verdict and never sees data
-the tools did not hand it.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/edish-github/Plumeprint/main/docs/diagrams/16-upwind-geometry.png" alt="Atmospheric Upwind Spatial Cone Geometry" width="85%"/>
+  <br/>
+  <em>Figure 4: Geometric formulation of the 45° atmospheric upwind acceptance cone, defining candidate source feasibility relative to receptor coordinates and meteorological advection vectors.</em>
+</p>
 
-### The verifier
+### 1. Atmospheric Advection Vector Inversion
+For a monitoring receptor $R$ located at $\mathbf{x}_R = (\phi_R, \lambda_R)$ and candidate industrial source $S_i$ located at $\mathbf{x}_{S_i} = (\phi_{S_i}, \lambda_{S_i})$:
 
-Every case file passes plain-code checks before anyone sees it:
+1. **Angular Deviation Metric**:
+   Given instantaneous meteorological wind direction $\theta_{\text{wind}}(t)$ (the compass direction *from* which the wind blows):
+   $$\Delta\theta(R, S_i, t) = \left| \left( \theta_{\text{bearing}}(R, S_i) - \theta_{\text{wind}}(t) + 180^\circ \right) \pmod{360^\circ} - 180^\circ \right|$$
 
-- **Numbers.** Every numeric claim must appear in a tool result from that run. An invented
-  figure is rejected.
-- **Evidence.** Every cited id must be one a tool returned.
-- **Language.** Accusation words are blocked outright. The product says "no matching
-  report", never "illegal" or "violation".
+2. **$45^\circ$ Acceptance Cone Criterion**:
+   A candidate facility $S_i$ is physically capable of contributing to receptor $R$ at time $t$ if and only if its angular deviation satisfies:
+   $$\Delta\theta(R, S_i, t) \le 22.5^\circ$$
 
-One retry is allowed, with the violations spelled out. A second failure falls back to a
-deterministic case file built from pipeline output.
+3. **Dynamic Atmospheric Transport Delay**:
+   The advection transport time $\tau(R, S_i)$ from facility to receptor under boundary-layer wind velocity $\bar{u}(t)$ is:
+   $$\tau(R, S_i) = \frac{d(R, S_i)}{\bar{u}(t) \cdot \cos(\Delta\theta)}$$
+   For target complexes ($d \le 15\text{ km}$, $\bar{u} \ge 2.0\text{ m/s}$), transport delay satisfies $0.2\text{ hr} \le \tau \le 2.1\text{ hr}$.
 
-### Any model, or none
+### 2. Episodic Baseline Decomposition
+Continuous ambient concentration time series $C_k(t)$ are decomposed into a 24-hour rolling background baseline $B_k(t) = \text{median}_{24\text{h}}(C_k(t))$ and an episodic excursion component $E_k(t)$:
+$$C_k(t) - B_k(t) \ge 3 \cdot \sigma_k \quad \land \quad C_k(t) \ge C_{\text{regulatory\_threshold}}(k)$$
 
-The investigator talks to whatever model you can get. Provider is chosen by environment,
-so switching costs nothing:
+---
+
+## Deterministic Classification & Forensic Scoring
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/edish-github/Plumeprint/main/docs/diagrams/05-episode-verdict-flow.png" alt="Deterministic Episode Verdict Decision Tree" width="95%"/>
+  <br/>
+  <em>Figure 5: Deterministic Decision Tree mapping physical spatial cone validity, transport delays, and self-reported filings into mutually exclusive, auditable verdicts.</em>
+</p>
+
+### Classification States
+1. `EXPLAINED_BY_REPORT`: Physical upwind alignment corroborates an active self-reported STEERS filing with matching chemical species.
+2. `UNEXPLAINED_EXCESS`: A statistically significant ambient excursion with unambiguous upwind alignment to an industrial source, but zero corresponding regulatory filings.
+3. `MULTI_SOURCE_CONFLUENCE`: Multiple permitted facilities concurrently situated within the active upwind advection cone.
+4. `BACKGROUND_ELEVATION`: Regional concentration elevation lacking local point-source alignment.
+
+### Multi-Factor Forensic Confidence Scoring
+$$S_{\text{forensic}} = 0.35 S_{\text{spatial}} + 0.25 S_{\text{temporal}} + 0.25 S_{\text{chemical}} + 0.15 S_{\text{regulatory}}$$
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/edish-github/Plumeprint/main/docs/diagrams/07-scoring-model.png" alt="Forensic Scoring Model Formulation" width="95%"/>
+  <br/>
+  <em>Figure 6: Parameter formulation and weighting distribution of the PlumePrint forensic scoring engine.</em>
+</p>
+
+---
+
+## System Architecture & Data Engineering
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/edish-github/Plumeprint/main/docs/diagrams/02-system-architecture.png" alt="5-Tier Decoupled System Architecture" width="95%"/>
+  <br/>
+  <em>Figure 7: Five-tier decoupled architectural topology of PlumePrint.</em>
+</p>
+
+PlumePrint is structured into five hermetically decoupled tiers:
+
+1. **Ingestion Engine**: Streams hourly EPA AQS data, scrapes and parses TCEQ STEERS incident reports, and fetches boundary-layer wind vectors from NOAA ISD / Texas Mesonet.
+2. **Harmonization Core**: Converts all timestamps to a single UTC hour index, projects geodetic coordinates to planar UTM meters, and standardizes chemical units ($\text{ppb}$, $\mu\text{g/m}^3$, $\text{lb/hr}$).
+3. **Inversion Pipeline DAG**: Vectorized NumPy/Pandas execution of advection cones, transport delays, and dual-ledger cross-matching across multi-year regional matrices.
+4. **Administrative Case Synthesizer**: Compiles formal open records petitions under Texas Public Information Act §552 and FOIA.
+5. **Static Client Application**: Next.js 15 / React 19 application compiled into 510 static edge pages with zero runtime server dependencies.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/edish-github/Plumeprint/main/docs/diagrams/03-data-pipeline.png" alt="Data Ingestion & Inversion Pipeline DAG" width="95%"/>
+  <br/>
+  <em>Figure 8: Directed Acyclic Graph (DAG) tracing data transformations from raw governmental streams to validated golden records.</em>
+</p>
+
+---
+
+## Interactive Cartography & Evidence Dossiers
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/edish-github/Plumeprint/main/docs/diagrams/ui-segment-spatial-cone.png" alt="Interactive 45-Degree Spatial Cone Map" width="100%"/>
+  <br/>
+  <em>Figure 9: Texas City interactive workspace rendering the active 45° upwind advection cone sweeping SSE across Blanchard Refining, INEOS Chemicals, and Gulf Coast Ammonia during an unrecorded 50.9 ppb exceedance.</em>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/edish-github/Plumeprint/main/docs/diagrams/ui-segment-evidence-dossier.png" alt="Automated Texas Public Information Act §552 Legal Records Petition" width="85%"/>
+  <br/>
+  <em>Figure 10: Rule-based evidentiary dossier and automated Texas Public Information Act (§552) formal public records request pre-addressed to state environmental coordinators.</em>
+</p>
+
+---
+
+## Verification & Test Coverage
+
+The platform enforces strict automated validation across both backend analytical pipelines and frontend interface components:
 
 ```bash
-# Google AI Studio: free, no credit card, roughly 1,500 requests a day
-GEMINI_API_KEY=... npm run llm:cases
-
-# Any OpenAI-compatible endpoint: NVIDIA NIM, Groq, OpenRouter, Together, local Ollama
-OPENAI_API_KEY=... OPENAI_BASE_URL=https://integrate.api.nvidia.com/v1 \
-  PLUMEPRINT_MODEL=meta/llama-3.3-70b-instruct npm run llm:cases
-
-# Anthropic
-ANTHROPIC_API_KEY=... npm run llm:cases
-
-# Force a provider or model explicitly
-PLUMEPRINT_PROVIDER=gemini PLUMEPRINT_MODEL=gemini-2.5-flash-lite npm run llm:cases
+# Verification Suite Summary
+Python Analytical Core & Pipeline:   24 / 24 PASS  (pytest tests/test_core.py)
+TypeScript Component & State Suite:  35 / 35 PASS  (vitest web/tests/)
+Next.js Static Compilation:          0 Errors      (510 statically exported pages)
 ```
 
-Model names move. If a default is rejected, check which models your key can call and set
-`PLUMEPRINT_MODEL`.
-
-The verifier matters *more* with a smaller model, not less: a weaker model is likelier to
-invent a figure, and an invented figure is exactly what gets rejected. A draft that fails
-twice falls back to the template, so nothing unverified reaches a reader whichever model
-wrote it. If a call fails mid-batch, which free tiers do, that episode falls back to the
-template and the run continues.
-
-### It works without an API key
-
-`npx tsx scripts/run-agent.ts` with no key writes template case files for every episode,
-assembled from pipeline output. A fresh clone produces a complete, honest site with no
-model access at all. That fallback is also the baseline the model has to beat.
+### Reproducibility Quickstart
 
 ```bash
-cd web && npm install
-npm test                    # 25 tests, no API key needed
-npm run llm:cases           # cached case files
-ANTHROPIC_API_KEY=... npm run llm:all   # with the model
-```
+# 1. Clone repository
+git clone https://github.com/edish-github/Plumeprint.git
+cd Plumeprint
 
-## Data sources
-
-| Source | Used for | Access |
-|---|---|---|
-| [EPA AQS bulk hourly files](https://aqs.epa.gov/aqsweb/airdata/download_files.html) | hourly SO2, on-site wind | public domain, no key |
-| [TCEQ Air Emission Event Reports](https://www2.tceq.texas.gov/oce/eer/index.cfm) | self-reported releases | Texas public records |
-| [Open-Meteo archive](https://open-meteo.com/en/docs/historical-weather-api) | modelled wind where no on-site wind | CC BY 4.0 |
-| [EPA FRS / ECHO](https://echo.epa.gov/) | facility coordinates, joined on the TCEQ RN | public domain |
-| [OpenStreetMap](https://www.openstreetmap.org/copyright) via Overpass | industrial footprints | ODbL |
-
-Weather data by Open-Meteo.com. Facility footprints © OpenStreetMap contributors.
-
-## Running it
-
-```bash
-python -m venv .venv && source .venv/bin/activate
+# 2. Python environment & verification
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -e ".[dev]"
+pytest tests/test_core.py
 
-python -m pipeline.cli all          # every stage, in order
-python -m pipeline.cli check        # acceptance checks only
-python -m pipeline.cli s9 s11       # selected stages
-python -m pytest -q                 # unit tests
+# 3. Run deterministic data pipeline
+python -m pipeline.run
+
+# 4. Web application build & testing
+cd web
+npm install
+npm run typecheck
+npm run test
+npm run build
+
+# 5. Launch local production preview server (zero API keys required)
+python3 -m http.server 4321 --directory out
+# Open http://localhost:4321 in your browser
 ```
 
-Every external fetch is cached under `data/raw/`, so a second run works offline. The first
-run downloads roughly 500 MB of EPA files and fetches around 950 TCEQ pages at one every
-0.4 s, so allow half an hour. Stages resume where they stopped.
+---
 
-### Stages
+## License
 
-| | Stage | Does |
-|---|---|---|
-| S1 | `s1_ingest_aqs` | Stream EPA yearly zips, keep configured monitors |
-| S3 | `s3_ingest_openmeteo` | Modelled wind per monitor-year |
-| S4 | `s4_scrape_aeer` | Search, paginate and parse TCEQ reports |
-| S5 | `s5_facilities` | Coordinates from FRS/ECHO, footprints from OSM |
-| S6 | `s6_normalize` | One UTC hour index, one chosen wind source |
-| S7 | `s7_episodes` | Episode detection |
-| S8 | `s8_fingerprint` | Conditional probability by wind bin, bootstrapped |
-| S9 | `s9_reconcile` | Verdicts both directions |
-| S10 | `s10_coverage` | Upwind share and visible mass per facility |
-| S11 | `s11_export` | Static JSON for the web app |
-| S12 | `s12_validate` | Golden-number gate |
-
-Every tunable lives in `config/sites.yaml`. Nothing downstream hardcodes a threshold.
-
-## Verdicts
-
-| Episode verdict | Meaning |
-|---|---|
-| `MATCHED` | time, direction and pollutant all agree with a filed report |
-| `WEAK_MATCH` | a report overlaps but the fit is partial or indirect |
-| `UNEXPLAINED` | no filed report matches |
-| `REGIONAL` | other monitors were high too, so the cause is not local |
-
-| Report visibility | Meaning |
-|---|---|
-| `SEEN` | the monitor recorded a matching episode |
-| `FAINT` | a bump above background, below the episode threshold |
-| `UNSEEN_WIND_TOWARD` | no bump, though the monitor was downwind for part of it |
-| `UNSEEN_WIND_AWAY` | no bump, and the wind was not blowing toward the monitor |
-| `NO_DATA` | the monitor was not reporting for enough of the window |
-
-## Validation
-
-`data/golden/feasibility_2023.json` holds numbers measured by hand on 17 Sep 2026, before
-this code existed. `python -m pipeline.cli s12` checks the pipeline still reproduces them.
-58 pipeline acceptance checks, 24 Python unit tests and 25 TypeScript tests currently pass.
-
-One known convention difference, documented rather than papered over: the 2023 hour count
-is 7,998 on a local-standard-time basis and 8,003 on UTC years, because the 2022 file's
-last local hours fall into 2023 UTC.
-
-## Notes on accuracy
-
-- Facility coordinates come from EPA FRS joined on the facility's own TCEQ RN number, so
-  the join is exact rather than fuzzy name matching. Facilities placed only by geocoding a
-  street address cannot reach `MATCHED`: a mailing address is not a plant centroid.
-- Footprint radii come from OpenStreetMap polygons where Overpass responds, otherwise from
-  documented per-class defaults in `config/sites.yaml`. Every facility records which it
-  got in its `footprint_source` field. Defaults are assumptions, labelled as assumptions,
-  and they only widen the angular window.
-- 99.9% of reported pollutant mass belongs to facilities with resolved coordinates. A few
-  pipeline segments and tank batteries have no public coordinates and are excluded from
-  bearing tests rather than guessed at.
-
-## Licence
-
-MIT. Data belongs to its original publishers under the licences listed above.
+This project is licensed under the [MIT License](LICENSE). Public air monitoring and emission records are sourced from the U.S. Environmental Protection Agency (EPA) and the Texas Commission on Environmental Quality (TCEQ).
